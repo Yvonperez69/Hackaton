@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <string>
 #include "game.hpp"
-#include "keyboard-event.hpp"
+#include "keyboard_event.hpp"
 
 // Ceci est le squelette d'un jeu où un caractère se déplace sur un board.
 // Le code est ici volontairement très simple, moche et pas structuré du tout (des variables globales !)
@@ -13,17 +13,32 @@
 // pour parler au joueur
 std::string message = "Welcome to our super game !";
 
-//void draw_message()
-//{
-//}
 
-Game::Game(int r, int c) : rows(r), columns(c), board(r * c, '.'), hero(2, 7, 3, 20) {
+Game::Game(int r, int c) : rows(r), columns(c), hero(2, 7, 3, 20) {
     rows = r;
     columns = c;
-    board = std::vector<char>(rows * columns, '.');
+    renderer = new SDLRenderer(1180, 150, 10);
+    dungeon.push_back("######################################################################################################################");
+    dungeon.push_back("#............##............#############################.............................................................#");
+    dungeon.push_back("#............##............#########################+++++####..##############################################.########");
+    dungeon.push_back("#....#####...##..#.###.....########################++#########.###########..........................#########.########");
+    dungeon.push_back("#....#...#.......#...#.....####################+++++##########....#####....############.###########.#########.########");
+    dungeon.push_back("#....#...............#.....####################+#############..##.#####.####....#######.##########..#######...########");
+    dungeon.push_back("#....#.###.......#####.....####################+############..###....##.##...##.#######.##########.###################");
+    dungeon.push_back("#............##............+++++++++++++++++++++############.#######.##.#..####....###############..##################");
+    dungeon.push_back("#............##............#########################################......########.################.........##########");
+    dungeon.push_back("###########################################################################################################+##########");
+    dungeon.push_back("###########################################################################################################+##########");
+    dungeon.push_back("#####################################################################################.........########++++++##########");
+    dungeon.push_back("#####################################################################################....@....########+###############");
+    dungeon.push_back("#####################################################################################.........+++++++++###############");
+    dungeon.push_back("######################################################################################################################");
 }
 
 
+Game::~Game() {
+    delete renderer; 
+}
 
 void Game::reset_board()
 {
@@ -102,46 +117,32 @@ void Hero::move(char direction, int max_rows, int max_cols)
 }
 
 
-void Game::play_game()
-{
+void Game::play_game() {
     char key = 'l';
+    bool running = true;
 
-    while (true)
-    {
-        backgroundClear();
+    while (running) {
         reset_board();
         add_hero_to_board();
-        draw_board();
 
-        if (keyEventBlocking())
-        {
+        // Rendu SDL
+        renderer->drawDungeon(board);
+        renderer->render();
+
+        if (keyEventBlocking()) {
             std::cin >> key;
 
-            if (key == 'i' || key == 'k' || key == 'j' || key == 'l')
-            {
-                message = "moving hero";
+            if (key == 'i' || key == 'k' || key == 'j' || key == 'l') {
                 hero.move(key, rows, columns);
-            }
-            else if (key == 'm')
-            {
-                message = "le hero mange une pomme";
-                hero.health += 5;
-            }
-            else if (key == 't')
-            {
+            } else if (key == 't') {
                 teleport_hero();
+            } else if (key == 'q') {
+                running = false;
             }
-            else if (key == 'q')
-            {
-                backgroundClear();
-                std::cout << "see you soon !" << std::endl;
-                exit(1);
-            }
-            else
-            {
-                message = "unknown key command";
-            }
-            hero.health--; 
+            hero.health--;
         }
+
+        running = renderer->handleEvents();
     }
 }
+
