@@ -15,9 +15,11 @@
 
 int main()
 {
+
+  Game game(20,30);
   try
   {
-    play_game();
+    game.play_game();
   }
   // Cette exception ne devrait pas arriver !
   // Le jeu devrait tester tous les cas d'erreur.
